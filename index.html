@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS 3-Tier Website</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}
+header{background:#111827;color:white;padding:22px 8%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+header h2{margin:0;color:#60a5fa}
+header span{color:#d1d5db;font-size:14px}
+.hero{padding:65px 8%;background:linear-gradient(120deg,#172554,#2563eb);color:white}
+.hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 14px}
+.hero p{font-size:17px;line-height:1.6;max-width:650px}
+main{padding:35px 8%;max-width:1200px;margin:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.card{background:white;padding:22px;border-radius:12px;box-shadow:0 4px 15px #0f172a0c}
+.card h3{margin-top:0;color:#2563eb}
+.section-title{margin:35px 0 15px}
+button{background:#2563eb;color:white;border:0;padding:12px 18px;border-radius:8px;cursor:pointer;font-size:15px}
+button:hover{background:#1d4ed8}
+#status{color:#475569;margin-left:10px;font-size:14px}
+.record{background:white;border:1px solid #e2e8f0;padding:16px;border-radius:10px;margin:12px 0;overflow-wrap:anywhere}
+.record p{margin:7px 0}
+footer{text-align:center;padding:24px;color:#64748b}
+</style>
+</head>
+<body>
+<header>
+<h2>AWS 3-Tier</h2>
+<span>Cloud • Compute • Database</span>
+</header>
+<section class="hero">
+<h1>Welcome to My AWS Project</h1>
+<p>A three-tier web application using an Application Load Balancer, two EC2 web servers, a Flask backend and an Amazon RDS MySQL database.</p>
+<p>Web Server 1 · Web Server 2 · Amazon RDS</p>
+</section>
+<main>
+<div class="cards">
+<div class="card"><h3>Web Tier</h3><p>Two EC2 web servers behind a load balancer.</p></div>
+<div class="card"><h3>Application Tier</h3><p>Flask backend serves visitor data.</p></div>
+<div class="card"><h3>Database Tier</h3><p>Visitor records stored in Amazon RDS MySQL.</p></div>
+</div>
+<h2 class="section-title">Visitor Records</h2>
+<p>Records retrieved live from the database through the backend API.</p>
+<button onclick="loadVisitors()">Refresh records</button>
+<span id="status" aria-live="polite">Loading...</span>
+<div id="visitors"></div>
+</main>
+<footer>AWS 3-Tier Website Project</footer>
+<script>
+async function loadVisitors(){
+const status=document.getElementById('status');
+const container=document.getElementById('visitors');
+status.textContent='Loading records...';
+try{
+const response=await fetch('/visitors',{cache:'no-store'});
+if(!response.ok)throw new Error('HTTP '+response.status);
+const records=await response.json();
+container.replaceChildren();
+if(!records.length){container.textContent='No visitor records found.';}
+else{
+records.forEach(record=>{
+const card=document.createElement('div');
+card.className='record';
+const title=document.createElement('h3');
+title.textContent='#'+record.id+' — '+record.name;
+const message=document.createElement('p');
+message.textContent=record.message||'No message';
+const date=document.createElement('small');
+date.textContent='Created: '+record.created_at;
+card.append(title,message,date);
+container.append(card);
+});
+}
+status.textContent=records.length+' record(s) loaded';
+}catch(error){
+status.textContent='Could not load records. Try refreshing.';
+console.error(error);
+}
+}
+loadVisitors();
+</script>
+</body>
+</html>
